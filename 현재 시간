@@ -1,0 +1,12 @@
+const scriptName = "시간";
+
+function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
+  if(msg=="오하이오"||msg=="오하요"){
+    var day = new Date();
+    if(day.getHours()>=12&&day.getHours()<=23) apm="pm"
+    else apm="am"
+    if(day.getHours()>=5&&day.getHours()<=18) emo='☀'
+    else emo='🌙'
+    replier.reply("오하이오 시간⏰\n"+day.getFullYear()+"년 "+(day.getMonth()+1)+"월 "+day.getDate()+"일 \n"+emo+day.getHours()%123+"시 "+day.getMinutes()+"분 "+apm);
+  }
+}
