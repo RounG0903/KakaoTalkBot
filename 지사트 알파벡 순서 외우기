@@ -1,0 +1,50 @@
+const scriptName = "사트";
+a =['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+b=['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+c=['ㅏ','ㅑ','ㅓ','ㅕ','ㅗ','ㅛ','ㅜ','ㅠ','ㅡ','ㅣ']
+game=0
+stack=0
+gameMode=[a,b,c]
+randomIndex=[26,14,10]
+mode=0
+function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
+  if(sender=="이대현"){
+    
+    if(msg=="/알파벳"){
+      mode=0
+      r=Math.floor(Math.random()*26);
+      replier.reply(gameMode[mode][r])
+      game=1
+    }
+    else if(msg=="/자음"){
+      mode=1
+      r=Math.floor(Math.random()*14);
+      replier.reply(gameMode[mode][r])
+      game=1
+    }
+    else if(msg=="/모음"){
+      mode=2
+      r=Math.floor(Math.random()*10);
+      replier.reply(gameMode[mode][r])
+      game=1
+    }
+    else if(game==1){
+      if(msg=="/끝"){
+       replier.reply("수고하셨습니다.")
+       game=0
+     }
+     else {
+        if(msg==r+1){
+         stack+=1
+         replier.reply("정답 stack:"+stack)
+       }
+       else{
+        stack=0
+        replier.reply("오답 "+(r+1)+"번째")
+       }
+       r=Math.floor(Math.random()*randomIndex[mode]);
+         replier.reply(gameMode[mode][r])
+      }
+    }
+  }
+}
