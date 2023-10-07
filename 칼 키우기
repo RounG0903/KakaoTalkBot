@@ -1,0 +1,182 @@
+const scriptName = "무기키우기";
+
+
+const FS = FileStream;
+const ItemPath = '/sdcard/카톡봇/무기키우기/아이템/';
+const WeaponPath = '/sdcard/카톡봇/무기키우기/무기/';
+const WalletPath = '/sdcard/카톡봇/무기키우기/지갑/';
+const HistoryPath = '/sdcard/카톡봇/무기키우기/히스토리/';
+const PlayerListPath = '/sdcard/카톡봇/무기키우기/플레이어리스트.json';
+const PlayerDailyPath = '/sdcard/카톡봇/무기키우기/출첵리스트.json';
+
+var unbroken=[];
+var list=["일반검", "쓸만한 검","좋은 검","ㅈㄴ 좋은 검","개쩌는 검","부러진 악마의 검","붉은 검","ㅈㄴ 쎈 악마의 검","천사의 깃털검","천사의 황금검","신의 검","셰인트의 검","신을 죽인 나뭇가지","엑스칼리버"]
+function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
+  
+    PlayerWeaponPath = (WeaponPath+sender+".json");
+    PlayerWalletPath = WalletPath+sender+".json";
+    PlayerHistoryPath = (HistoryPath+sender+".json");
+    PlayerItemPath = (ItemPath+sender+".json");
+    
+    PlayerWeapon = JSON.parse(FS.read(PlayerWeaponPath)||'[]');
+    PlayerWallet = JSON.parse(FS.read(PlayerWalletPath)||'[]');
+    PlayerHistory = JSON.parse(FS.read(PlayerHistoryPath)||'[]');
+    PlayerItem = JSON.parse(FS.read(PlayerItemPath)||'[]');
+    
+  
+  
+  
+  //신규등록
+  if(msg=="/등록"){
+    //정보 읽어오기
+    PlayerList = JSON.parse(FS.read(PlayerListPath)||'[]');
+    //등록
+    if(PlayerList.find(e => e.name == sender)){
+      replier.reply(sender+"님은 이미 회원입니다.");
+    }
+    else{
+      var weapon ={"name":"검", "level":1, "PB":100, "price":800}
+      
+      PlayerHistory.push({"title":"신규등록", "point":20000});
+      PlayerList.push({"name":sender});
+      PlayerItem=({"item":1});
+      
+      FS.write(PlayerItemPath, JSON.stringify(PlayerItem));
+      FS.write(PlayerListPath, JSON.stringify(PlayerList));
+      FS.write(PlayerHistoryPath, JSON.stringify(PlayerHistory));
+      FS.write(PlayerWeaponPath, JSON.stringify(weapon));
+      replier.reply(sender+"용사님! 반갑습니다.\n신규 용사 보상으로 20000골드를 지급해드렸습니다.\n/ㅈㄱ: 지갑을 확인하세요.\n/ㅊㅊ: 매일 출석해 보상을 받으세요.\n/ㅁㄱ: 가진 무기에 대한 정보를 보세요.\n/ㄱㅎ: 무기를 강화하세요!\n/ㅍㅁ: 무기 판매!/n/ㅇㅇㅌ: 한번 무기가 파괴되는 것을 막는 아이템 구입 5000")
+    }
+    
+  }
+  
+  
+  //출석보상
+  if(msg=="/ㅊㅊ"){
+    //오늘의 날짜
+    var today=(java.text.SimpleDateFormat("y/M/d").format(new Date()));
+    //정보 읽어오기
+    var PlayerDaily = JSON.parse(FS.read(PlayerDailyPath)||'[]');
+    //출첵
+    if(PlayerDaily.find(e => e.date == today && e.name == sender)){
+      replier.reply(sender+"님은 이미 출첵 보상을 받았습니다.");
+    }
+    else{
+      PlayerHistory.push({"title":"출첵", "point":10000});
+      PlayerDaily.push({"date": today, "name": sender});
+      FS.write(PlayerHistoryPath, JSON.stringify(PlayerHistory));
+      FS.write(PlayerDailyPath, JSON.stringify(PlayerDaily));
+      replier.reply("출첵 보상 지급 완료!")
+    }
+    
+    
+  }
+  
+  //아이템
+  if(msg=="/ㅇㅇㅌ"){
+    if(PlayerWallet.point>=5000){
+      PlayerHistory.push({"title":"아이템 구매", "point":-5000});
+      PlayerItem=({"item":(PlayerItem.item+1)});
+      FS.write(PlayerItemPath, JSON.stringify(PlayerItem));
+      FS.write(PlayerHistoryPath, JSON.stringify(PlayerHistory));
+      
+      replier.reply("1회 깨짐 방어 구매 완료: "+PlayerItem.item)
+    }
+    else{
+      replier.reply("돈이 없어요..비용: 5000");
+    }
+  }
+  //플레이어 지갑
+  if(msg=="/ㅈㄱ"){
+    if(unbroken.indexOf(sender)!=-1){
+      unbroken.splice(unbroken.indexOf(sender),1)
+      replier.reply("아이템 사용 취소")
+      var weapon ={"name":"검", "level":1, "PB":100, "price":800}
+      FS.write(PlayerWeaponPath, JSON.stringify(weapon));
+    }
+    WalletUpdate();
+    replier.reply(sender+"님의 지갑\n"+PlayerWallet.point+" 코인\n1회 방어: "+PlayerItem.item);
+    
+  }
+  
+  //판매
+  if(msg=="/ㅍㅁ"){
+    if(unbroken.indexOf(sender)!=-1){
+     replier.reply("/ㅈㄱ을 입력해주세요.")
+     return;
+    }
+    PlayerHistory.push({"title":"무기판매", "point":PlayerWeapon.price});
+    FS.write(PlayerHistoryPath, JSON.stringify(PlayerHistory));
+
+    var weapon ={"name":"검", "level":1, "PB":100, "price":800}
+    FS.write(PlayerWeaponPath, JSON.stringify(weapon));
+    replier.reply("무기를 팔았습니다.")
+    //지갑확인
+    WalletUpdate();
+    replier.reply(sender+"님의 지갑\n"+PlayerWallet.point+" 코인");
+  }
+  
+  
+  //무기
+  if(msg=="/ㅁㄱ"){    
+    replier.reply(PlayerWeapon.name+"\n"+PlayerWeapon.level+" level\n강화 확률: "+PlayerWeapon.PB+"%");
+  }
+  
+  //강화
+  if(msg=="/ㄱㅎ"){   
+    WalletUpdate();
+    if(unbroken.indexOf(sender)!=-1&&PlayerWallet.point>=1000+250*PlayerWeapon.level){
+      unbroken.splice(unbroken.indexOf(sender),1)
+      PlayerItem=({"item":PlayerItem.item-1});
+      FS.write(PlayerItemPath, JSON.stringify(PlayerItem));
+      replier.reply("아이템 사용!")
+    }
+    if(PlayerWallet.point>=1000+400*PlayerWeapon.level){
+      r=Math.floor(Math.random()*100)+1
+      PlayerHistory.push({"title":"강화", "point":-(1000+250*PlayerWeapon.level)});
+      FS.write(PlayerHistoryPath, JSON.stringify(PlayerHistory));
+      if(r<=PlayerWeapon.PB){
+        //무기 업데이트
+        point = PlayerWeapon.level;
+        level = PlayerWeapon.level+1;
+        name = list[level-1];
+        PB=PlayerWeapon.PB-=PlayerWeapon.PB*0.20
+        price = Math.floor(PlayerWeapon.price+(PlayerWeapon.price));
+        weapon ={"name":name, "level":level, "PB":PB, "price": price}
+        replier.reply("강화성공!\n"+name+"\n"+level+" level\n강화 확률: "+PB+"%\n판매가치: "+price+"\n다음 강화 비용"+(1000+250*level));
+        //지갑
+        WalletUpdate();
+        replier.reply(sender+"님의 지갑\n"+PlayerWallet.point+" 코인");
+        FS.write(PlayerWeaponPath, JSON.stringify(weapon));
+      }
+      else{
+        replier.reply("강화실패!!!");
+        if(PlayerItem.item==0){
+          var weapon ={"name":"검", "level":1, "PB":100, "price":800}
+          FS.write(PlayerWeaponPath, JSON.stringify(weapon));
+        }
+        else{
+          unbroken.push(sender);
+          replier.reply("아이템:"+PlayerItem.item+"  코인: "+PlayerWallet.point+"\n아이템을 사용하려면 /ㄱㅎ, 아니면 /ㅈㄱ을 입력해주서요.")
+        }
+    }
+      
+    }
+    else{
+      replier.reply("돈이 부족해요..\n비용: "+(1000+250*PlayerWeapon.level))
+    }
+  }
+  
+  function WalletUpdate(){
+    var pointSum=0;
+    //점수계산
+    for(i=0;i< PlayerHistory.length; i++){
+        pointSum+=PlayerHistory[i].point;
+    }
+      
+    PlayerWallet={"point":pointSum};
+    FS.write(PlayerWalletPath, JSON.stringify(PlayerWallet));
+  }
+  
+}
+
