@@ -1,0 +1,155 @@
+const scriptName="솨솨코인.js";
+var blank="\u200b".repeat(501)
+var 솨프필=FileStream.read("sdcard/katalkbot/솨프필.text")
+var IHW프필=FileStream.read("sdcard/katalkbot/I♡HW프필.text")
+사채관리자박스=FileStream.read("sdcard/katalkbot/사채관리자.text")
+맥라켄=FileStream.read("sdcard/katalkbot/맥라켄.text")
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId){
+
+//-----------------------회원구별------------------------------------
+profile=java.lang.String(ImageDB.getProfileImage()).hashCode();
+name=(sender)
+지갑목록=FileStream.read("sdcard/katalkbot/솨솨코인/지갑목록.txt")
+회원코드=(profile+"~"+name)
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")
+coinN=Number(coin)
+var 프추=ImageDB.getProfileImage()
+//---------------
+
+//----------기록------
+if(msg=="/선물 기록"){
+scp=FileStream.read("sdcard/katalkbot/솨솨코인/솨솨코인 선물.txt")
+replier.reply("ㆍ솨솨코인 선물 기록ㆍ"+blank+"\n\n"+scp)
+}
+if(msg=="/관리자 선물 기록"){
+scmp=FileStream.read("sdcard/katalkbot/솨솨코인/솨솨코인 관리자 선물.txt")
+replier.reply("ㆍ관리자 선물ㆍ"+blank+"\n\n"+scmp)
+}
+
+//-----------------사채관리자------------------
+
+//-----------------------------관리자-------------------------------------------
+if(sender=="솨"&&프추==솨프필||sender=="I♡HW"&&프추==IHW프필||프추==맥라켄||프추==사채관리자박스){
+//-----------초기화-------
+if(msg.indexOf("/코인 초기화")!=-1){
+t=msg.substring(8)
+replier.reply("[솨봇] "+t+"님의 코인이 초기화되었습니다.")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+t+"지갑.txt",0)
+}
+//--------------------------선물-------------------------------------
+if(msg.indexOf("/솨솨코인 관리자 선물")!=-1){
+h=msg.indexOf("++")
+t=msg.substring(13,h).trim()
+m=Number(msg.substring(h+2))
+coinP=Number(FileStream.read("sdcard/katalkbot/솨솨코인/"+t+"지갑.txt"))
+FileStream.write("sdcard/katalkbot/솨솨코인/"+t+"지갑.txt",coinP+m)
+replier.reply("[솨봇] 관리자님이 ["+t+"]님에게 ["+m+"]코인을 선물하였습니다.")
+FileStream.append("sdcard/katalkbot/솨솨코인/솨솨코인 관리자 선물.txt","ㆍ["+회원코드+"]님이 ["+t+"]님께 ["+m+"] 코인을 선물했습니다.\n\n")
+}
+//---------------------------------------------------------------------
+}//관리자
+//---------------------선물--------------------
+if(msg.indexOf("/솨솨코인 선물")!=-1){
+if(지갑목록.indexOf(회원코드)!=-1){
+h=msg.indexOf("++")
+t=msg.substring(9,h).trim()
+m=Number(msg.substring(h+2))
+if(m<=coinN&&m>=1){
+if(t!=회원코드){
+if(지갑목록.indexOf(t)!=-1){
+coinM=Number(FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt"))
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinM-m)
+coinP=Number(FileStream.read("sdcard/katalkbot/솨솨코인/"+t+"지갑.txt"))
+FileStream.write("sdcard/katalkbot/솨솨코인/"+t+"지갑.txt",coinP+m)
+replier.reply("[솨봇] ["+name+"]님이 ["+t+"]님에게 ["+m+"]코인을 선물하였습니다.\n 회원코드 오류로 인한 불이익은 책임지지않습니다.")
+coinT=Number(FileStream.read("sdcard/katalkbot/솨솨코인/"+t+"지갑.txt"))
+replier.reply("[솨봇] "+t+"님의 솨솨코인이 \n"+coinP+" --> "+coinT+"가 되었습니다. 이상하면 회원코드 오류임")
+FileStream.append("sdcard/katalkbot/솨솨코인/솨솨코인 선물.txt","ㆍ["+회원코드+"]님이 ["+t+"]님께 ["+m+"] 코인을 선물했습니다.\n\n")
+}
+else{
+replier.reply("[솨봇] 앗! 돈이 부족해요.\n 잔고 : ["+coinN+"] 코인")
+}
+}
+else{
+replier.reply("[솨봇] 버그 악용은 그만!")
+}
+}
+else{
+replier.reply("[솨봇] ["+t+"]는 회원코드에 없어요. 다시 확인해주세요!")
+}
+}
+else{
+replier.reply("[솨봇] "+name+"님은 아직 지갑이 없습니다.\nㆍ[/솨지갑 생성]을 통해 지갑을 만들어보세요!ㆍ")
+
+}
+}
+
+//-----------솨솨코인 도움말--------
+if(msg=="/솨솨코인"){
+replier.reply("ㆍ솨솨코인ㆍ"+blank+"\n\nㆍ/솨지갑 생성 (지갑을 만듭니다. 고유번호를 기억하세요!)\nㆍ/솨지갑 (지갑에 있는 돈을 확인합니다.)\nㆍ/솨지갑 목록 (솨솨코인 회원 목록을 보여줍니다.)\nㆍ/솨게임 (솨솨코인을 얻을 수 있는 여러 게임 목록이 나옵니다)\nㆍ/솨솨코인 선물(회원번호)++(금액) <- 괄호 때고 넣으삼") 
+}
+
+//--------------------회원 목록--------------------------------------------
+if(msg=="/솨지갑 목록"){
+replier.reply("ㆍ솨지갑 목록ㆍ"+blank+"\n\n"+지갑목록)
+}
+//----------------------지갑확인-----------------------------------------------
+if(msg=="/솨지갑"){
+if(지갑목록.indexOf(회원코드)!=-1){
+replier.reply("ㆍ"+name+"님의 솨지갑ㆍ\n\n 회원코드 : "+회원코드+"\n잔고 : "+coin+"코인")
+}
+else{
+replier.reply("[솨봇] "+name+"님은 아직 지갑이 없습니다.\nㆍ[/솨지갑 생성]을 통해 지갑을 만들어보세요!ㆍ")
+
+}
+}
+//-------------------------------------------------------------------
+if(msg=="/솨지갑 생성"){
+if(지갑목록.indexOf(회원코드)!=-1){
+replier.reply("[솨봇] ["+name+"]님은 이미 지갑을 만들었습니다. \n\n회원코드 : "+회원코드+"\n잔고 : "+coin+"원")
+}
+else{
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 플래이 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 잭팟 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 준잭팟 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 솨잭팟 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 무작위 잭팟 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 스트레이트 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 역스트레이트 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 썸7 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자맞추기 플래이 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자맞추기 성공 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자게임 플래이 횟수.txt","")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자게임 성공 횟수.txt","")
+FileStream.append("sdcard/katalkbot/솨솨코인/회원 수.text","+")
+FileStream.append("sdcard/katalkbot/솨솨코인/순위명단.text",회원코드+"‡")
+
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",300)
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")
+FileStream.write("sdcard/katalkbot/솨솨코인/지갑목록.txt",지갑목록+profile+"~"+name+"\n")
+replier.reply("[솨봇] "+name+"님의 지갑이 생성되었습니다. \n\nㆍ"+name+"님의 지갑ㆍ\n회원코드 : "+회원코드+"\n잔고 : "+coin+"코인\n\n 많은 이용 부탁드리지 않습니다!"+blank+"\n(주의 : 프로필이나 닉네임을 바꾸면 정보가 날라갑니다.)")
+}
+}
+//------------
+if(msg=="/순위"){
+회원수=FileStream.read("sdcard/katalkbot/솨솨코인/회원 수.text")
+회원수1=회원수.length
+회원이름=FileStream.read("sdcard/katalkbot/솨솨코인/순위명단.text")
+순위=[]
+for(i=0;i<회원수1;){
+회원이름1=회원이름.split("‡")[i].trim()
+회원코인=FileStream.read("sdcard/katalkbot/솨솨코인/"+회원이름1+"지갑.txt")
+순위.push(회원이름1.substring(회원이름1.indexOf("~")+1)+": "+회원코인)
+
+i++
+}
+순위 = 순위.sort(function(a,b){a=a.split(": ")[1];b=b.split(": ")[1]; return b-a;});
+replier.reply("ㆍ솨솨코인 순위ㆍ"+blank+"\n\n"+순위.join("\n"))
+
+}
+
+
+
+
+//-------
+}
