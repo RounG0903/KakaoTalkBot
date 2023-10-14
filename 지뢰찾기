@@ -1,0 +1,289 @@
+const scriptName = "지뢰찾기.js";
+var blank="\u200b".repeat(501);
+var Lbomb = [];
+var Cbomb = 10;
+var Hline0 = [];
+var Hline1 = [];
+var Hline2 = [];
+var Hline3 = [];
+var Hline4 = [];
+var Hline5 = [];
+var Hline6 = [];
+var Hline7 = [];
+var Hline8 = [];
+var Hline9 = [];
+var Hidden = [Hline0,Hline1,Hline2,Hline3,Hline4,Hline5,Hline6,Hline7,Hline8,Hline9];//판
+var Rsrd = [-1, -1, -1, 0, 0, 1, 1, 1];
+var Lsrd = [-1, 0, 1, -1, 1, -1, 0, 1];
+var shape = ["⓪","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣"]; //나타내는모양
+var blank_shape =["⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿"];
+
+var Pl=[];
+var show = [];
+Sline0 = blank_shape
+Sline1 = blank_shape
+Sline2 = blank_shape
+Sline3 = blank_shape
+Sline4 = blank_shape
+Sline5 = blank_shape
+Sline6 = blank_shape
+Sline7 = blank_shape
+Sline8 = blank_shape
+Sline9 = blank_shape
+var mt = [];
+var ob = [];
+var playing = 0;
+var gameend = 0;
+var no = [];
+var player;
+
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
+    if (msg == "/지뢰찾기") {
+        if (playing == 0) {
+            player = sender;
+            playing=1;
+            replier.reply("해상도나 안드로이드 버전, 지원하는 유니코드의 버전에 따라 지뢰찾기판이 다르게 나타납니다");
+            replier.reply("----지뢰찾기 방법----"+blank+"\n\n//간단 규칙 설명//\n 지뢰찾기 게임에는 4 종류의 박스가 있습니다.\n 1. 아직 뭔지 모르는 박스 🔲\n 2. 폭탄 박스 💣\n 3. 아무것도 없는 박스 ⬜\n 4. 주위에 폭탄이 있는 박스 1️⃣\n 5. 체크된 박스🚩\n\n 조심해야할 박스는 폭탄박스 💣\n 숫자박스1️⃣의 숫자에서 힌트를 얻어 폭탄박스의 위치를 맞춥니다.\n\n 숫자박스는 1~8까지가 있는데 이 숫자들은 박스주위에 얼마나 많은 폭탄이 있는지 나타냅니다.\n\n//명령어//\n-좌표입력: 세로.가로 \n  예를 들어 가로 3, 세로 4의 박스를 열고 싶으면 4.3\n\n-중간에 포기하고 싶을 땐: /포기\n\n-한번에 한사람만 가능\n\n-깃발: 세로!가로\n폭탄위치를 체크할 수 있습니다.\n같은 곳을 두번 체크하면 깃발이 사라집니다\n깃발이 표시된 곳은 열 수 없습니다.(지우면 열 수 있음)")
+   replier.reply("폭탄개수: "+Cbomb);
+
+            
+
+            //폭탄좌표
+            for (var i = 1; i <= Cbomb;) {
+                var Rrow = Math.floor(Math.random() * 10); //0-9
+                var Rline = Math.floor(Math.random() * 10); //중복될 우려있음
+                var Lb = (Rrow + "" + Rline);
+                if (Lbomb.indexOf(Lb) == -1) {
+                    Lbomb.push(Lb);
+                    i++;
+                }
+            }
+
+            //판만들기
+        for (i = 0; i <= 9; i ++) { // 10줄 모두 만들기
+    var R = i; // 행좌표(0부터 9까지)
+    var L = 0; // 열좌표
+    for (var ii = 0; ii <= 9; ii++) { // 한줄의 10칸
+        L = ii; //열좌표
+        var SrdBomb = 0; //주위 폭탄개수
+        for (var iii = 0; iii <= 8; iii++) { // 주위박스검사
+            r = R + Number(Rsrd[iii]); //주위 박스 행좌표
+            l = L + Number(Lsrd[iii]); //주위 박스 열좌표
+            if (Lbomb.indexOf(r + "" + l) != -1) {//만약 [폭탄위치]에 주위박스 좌표가 포함되면
+                SrdBomb++; //주위 폭탄개수 + 1
+            }
+        }
+        if (Lbomb.indexOf(R + "" + L) != -1) {//만약 박스 좌표가 폭탄좌표와 같다면
+            Hidden[R].push("💣"); //폭탄모양
+        } else {//아니면
+            Hidden[R].push(shape[SrdBomb]);//빈박스 혹은 숫자
+            if(SrdBomb == 0){ //만약 빈박스이면
+              mt.push(R + "" + L); //[빈박스] 추가
+            }
+        }
+    }
+}
+            //판모으기
+            Hidden = [Hline0, Hline1, Hline2, Hline3, Hline4, Hline5, Hline6, Hline7, Hline8, Hline9];
+            show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                
+            
+            replier.reply(show.join("\n").replace(/,/g,''));
+       
+        }
+        else{
+            replier.reply(player+"님이 게임중이에요.");
+        }
+
+
+
+
+    }
+
+
+
+    if (playing == 1&&sender==player) {
+
+if(msg.indexOf("!") !=-1){
+L = msg.split("!")[0].trim(); //행좌표
+R = msg.split("!")[1].trim(); //열좌표
+if(Pl.indexOf(R + "" + L)!=-1){
+
+replier.reply(Pl.filter(function(element){ element!=(R + "" + L)}))
+Pl=Pl.filter((element)=>element!=(R + "" + L))
+replier.reply("체크 취소")
+}
+
+else if(ob.indexOf(R + "" + L)==-1){
+Pl.push(R + "" + L);
+replier.reply("체크 완료")
+}
+else{
+replier.reply("열려있는 박스")
+}
+Sline0 = [];
+            Sline1 = [];
+            Sline2 = [];
+            Sline3 = [];
+            Sline4 = [];
+            Sline5 = [];
+            Sline6 = [];
+            Sline7 = [];
+            Sline8 = [];
+            Sline9 = [];
+            var show0=[Sline0,Sline1,Sline2,Sline3,Sline4,Sline5,Sline6,Sline7,Sline8,Sline9];
+            no = [];
+           
+            for(i=0;i<=9;i++){
+            for (ii = 0; ii <= 9; ii++) { //한줄 10칸
+                if (ob.indexOf(i +""+ ii) != -1) { //만약 열린박스 배열에 포함되면  
+                    var hd=Hidden[i];
+                    show0[i].push(hd[ii]); //모양정하기
+                } 
+else if(Pl.indexOf(i +""+ ii) != -1){
+show0[i].push("🚩");
+}
+
+else {//아니면
+                    show0[i].push("⓿"); //열리지 않은 박스
+                    no.push("0"); //열리지 않은 박스 +1
+                }
+            }
+            }
+
+           
+                show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                replier.reply(show.join("\n").replace(/,/g,''));
+            
+
+}
+        //포기
+        if (msg == "/포기") {
+            replier.reply("아쉽네요ㅠㅠ 게임을 종료합니다.")
+            replier.reply(Hidden.join("\n").replace(/,/g,''));
+            Api.compile(scriptName);
+        }
+
+        //칸열기
+  //칸열기
+        if (msg.indexOf(".") !=-1) { // 행좌표.열좌표
+            R = msg.split(".")[0].trim(); //행좌표
+            L = msg.split(".")[1].trim(); //열좌표
+if(Pl.indexOf(R + "" + L)!=-1){
+replier.reply("체크된 박스");
+}
+else{
+            var mts = [R + "" + L] //주변 8칸을 확인할 빈칸
+            var mtm = []; //mts의 주위 8칸 중 빈칸인 박스
+            var mtc = []; //확인을 다 하고 더 이상 검사가 필요없는 빈칸들
+            var Rr; //확인할 행좌표 변수
+            var Ll; //확인할 열좌표 변수
+            var Rrr; //주위 8칸 행좌표 변수
+            var Lll; //주위 8칸 열좌표 변수
+            var cmt;//주변 8칸을 확인할 빈칸 개수
+            if (ob.indexOf(R + "" + L) == -1) { //만약 입력한 좌표가 열린 박스에 포함되지 않았다면
+                if (Lbomb.indexOf(R + "" + L) != -1) { //입력한 좌표가 폭탄좌표라면
+                    replier.reply("지뢰를 밟았어요! 몸이 산산조각나겠네요.");
+                    Api.compile(scriptName); //컴파일 (초기화)
+                    ob.push(R + "" + L); //열린 박스 배열에 추가
+                } else if (mt.indexOf(R + "" + L) == -1) { // 만약 입력한 좌표가 빈칸 배열에 없다면
+                    ob.push(R + "" + L); //열린 박스 배열에 추가
+                } else if (mt.indexOf(R + "" + L) != -1) { //아니라 만약 입력한 좌표가 빈칸배열에 포함된다면 
+                       ob.push(R+""+L);
+
+                    for (; mts.length >= 1;) { //확인할 빈칸이 없을때 까지 
+                        cmt = mts.length - 1; //확인할빈칸계수-1
+                        for (i = 0; i <= cmt; i++) { //확인할빈칸수만큼 반복
+                            Rr = Number(mts[0].split("")[0]); //확인할 빈칸 열좌표
+                            Ll = Number(mts[0].split("")[1]); //확인할 열좌표 변수
+
+                            for (ii = 0; ii <= 7; ii++) { //확인한빈칸순서대로주위8칸확인
+                                Rrr = Rr + Rsrd[ii]; //주위 8칸
+                                Lll = Ll + Lsrd[ii]; //주위 8칸
+                                if (mtc.indexOf(Rrr + "" + Lll) == -1 && mtm.indexOf(Rrr + "" + Lll) == -1 && mts.indexOf(Rrr + "" + Lll) == -1 && ob.indexOf(Rrr + "" + Lll) == -1){ //중복제거
+                                    if (mt.indexOf(Rrr + "" + Lll) != -1) { //빈칸배열에포함되면
+                                        mtm.push(Rrr + "" + Lll); //주위빈칸
+
+                                    }
+                                }
+
+                            }
+                            mtc.push(mts[0]); //확인된 빈칸에 넣기
+                            mts.shift(); //확인된 빈칸에 넣고 삭제
+                        }
+                        mts = mtm; //빈칸주위빈칸을 확인할 빈칸에 넣기
+                        mtm = []; //초기화
+                    }
+                    for (; mtc.length >= 1;) { //한줄 정리
+                        Rr = Number(mtc[0].split("")[0]); //확인된 빈칸
+                        Ll = Number(mtc[0].split("")[1]); //확인된 빈칸
+                        for (ii = 0; ii <= 7; ii++) { //주위8칸
+                            Rrr = Rr + Rsrd[ii]; //주위빈칸
+                            Lll = Ll + Lsrd[ii]; //주위빈칸
+                            if (ob.indexOf(Rrr + "" + Lll) == -1) { //만약 열린칸에 없으면
+                                ob.push(Rrr + "" + Lll); //열린칸배열에 포함
+                            }
+
+
+                        }
+                        mtc.shift(); //확인된 빈칸 맨앞 삭제
+                    }
+                }
+
+            } else {
+                replier.reply("이미 오픈한 박스");
+            }
+            }
+
+            Sline0 = [];
+            Sline1 = [];
+            Sline2 = [];
+            Sline3 = [];
+            Sline4 = [];
+            Sline5 = [];
+            Sline6 = [];
+            Sline7 = [];
+            Sline8 = [];
+            Sline9 = [];
+            var show0=[Sline0,Sline1,Sline2,Sline3,Sline4,Sline5,Sline6,Sline7,Sline8,Sline9];
+            no = [];
+           
+            for(i=0;i<=9;i++){
+            for (ii = 0; ii <= 9; ii++) { //한줄 10칸
+                if (ob.indexOf(i +""+ ii) != -1) { //만약 열린박스 배열에 포함되면  
+                    var hd=Hidden[i];
+                    show0[i].push(hd[ii]); //모양정하기
+                } 
+else if(Pl.indexOf(i +""+ ii) != -1){
+show0[i].push("🚩");
+no.push("0");
+}
+
+else {//아니면
+                    show0[i].push("⓿"); //열리지 않은 박스
+                    no.push("0"); //열리지 않은 박스 +1
+                }
+            }
+            }
+
+            if (no.length != Cbomb) { //게임계속
+                show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                replier.reply(show.join("\n").replace(/,/g,''));
+            } else if (no.length == Cbomb) {//게임종료 승리
+                replier.reply("성공이네요! 축하해요");
+                show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                replier.reply(show.join("\n").replace(/,/g,''));
+                Api.compile(scriptName);
+                gameend = 1;
+            }
+
+
+        }
+
+    }
+
+
+    //끝
+
+
+}
