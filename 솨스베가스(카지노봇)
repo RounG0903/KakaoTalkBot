@@ -1,0 +1,398 @@
+const scriptName="솨게임.js";
+//------숫자맞추기 게임 변수-------
+ngame=0
+nplayer=0
+//------슬롯머신변수---------------
+rgame=0
+rplaying=0
+rplayer=0
+pm=0
+//----------블랙솨변수---------
+bgame=0
+bplaying=0
+bplayer1=0
+bplayer2=0
+bsmc=0
+//---------기타변수----------
+var blank="\u200b".repeat(501)
+//-----------------------------
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId){
+if(room=="솨스베가스"){
+if(msg=="/솨롯머신"){
+replier.reply("https://open.kakao.com/o/gZiCjO8b")
+}
+if(msg=="/솨 숫자맞추기"){
+replier.reply("https://open.kakao.com/o/gjxgjO8b")
+}
+}
+//-----------
+
+//------------------------회원구별변수-------------------------------------------------------
+if(msg){
+profile=java.lang.String(ImageDB.getProfileImage()).hashCode();//프필해쉬코드
+name=(sender)
+지갑목록=FileStream.read("sdcard/katalkbot/솨솨코인/지갑목록.txt")//지갑만든 사람 회원코드
+회원코드=(profile+"~"+name)//프필~이름
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")//코인텍스트
+coinN=Number(coin)//코인숫자
+var 프추=ImageDB.getProfileImage()//프필
+}
+//-------------
+
+//----------------------------------------솨게임 도움말----------------------------------
+if(msg=="/솨게임"){
+replier.reply("ㆍ솨게임 리스트ㆍ"+blank+"\n\nㆍ/솨 숫자맞추기 \n(1~15까지의 수 중 하나를 찍어서 맞추는 게임입니다. 성공시 : +200 실패시 : -15\n\nㆍ/솨롯머신 \n(카지노 슬롯머신과 비슷한 방식의 슬롯머신입니다. 원하는 만큼 배팅이 가능하고 슬롯머신 결과에 따라 코인을 얻거나 잃습니다. [/솨롯머신 도움말] 참고)")
+}
+//-----------------------------------------솨룰렛 도움말---------------------------------------------
+if(msg=="/솨롯머신 도움말"){
+replier.reply("ㆍ솨룰렛 도움말ㆍ"+blank+"\n\n♠=1 ♥=2 ♣=3 ♦️=4 🍒=5 ❌=6 솨=7\nㆍ숫자 순서대로 = 배팅금액 5배\nㆍ숫자 역순 = 배팅금액 10배 \nㆍ숫자가 다 일치 = 배팅금액 50배(솨잭팟은 100배 ❌잭팟?은 뭘까요ㅋ)")
+}
+//------------------------------------------솨룰렛---------------------------------------------
+if(room=="솨롯머신"){
+if(msg=="/히스토리"){
+rh=FileStream.read("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt")
+SMP=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 플래이 횟수.txt").length
+SMJ=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 잭팟 횟수.txt").length
+SMMJ=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 준잭팟 횟수.txt").length
+SMSJ=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 솨잭팟 횟수.txt").length
+SMRJ=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 무작위 잭팟 횟수.txt").length
+SMS=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 스트레이트 횟수.txt").length
+SMOS=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 역스트레이트 횟수.txt").length
+SMSS=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 썸7 횟수.txt").length
+
+replier.reply("ㆍ솨롯머신 히스토리ㆍ"+blank+"\n\nㆍ플래이 횟수: "+SMP+"\nㆍ잭팟 횟수: "+SMJ+"\nㆍ준잭팟 횟수: "+SMMJ+"\nㆍ잭팟 횟수: "+SMJ+"\nㆍ솨잭팟 횟수: "+SMSJ+"\nㆍ무작위 잭팟 횟수: "+SMRJ+"\nㆍ스트레이트 횟수: "+SMS+"\nㆍ역스트레이트 횟수: "+SMOS+"\nㆍ썸7 횟수: "+SMSS+"\n\n"+rh)
+}
+if(msg=="/솨롯머신"){
+if(rgame==0){
+if(지갑목록.indexOf(회원코드)!=-1){
+if(coinN>=10){
+replier.reply("[솨봇] ★솨롯머신★ 배팅할 코인을 [/베팅] 뒤에 입력하주세요. ex) /베팅 30\nㆍ취소하시려면 [/솨롯머신 취소]라고 해주세요.")
+rgame=1
+rplayer=(sender)
+}//코인
+else{
+replier.reply("[솨봇] "+name+"님은 돈이 부족해요! 10코인 이상있어야됍니다.ㅋㅋ")
+}
+}//회원여부
+else{
+replier.reply("[솨봇] "+name+"님은 아직 지갑이 없습니다.\n [/솨지갑 생성]을 통해 지갑을 만들어보세요!")
+}
+}//게임진행여부
+else{
+replier.reply("[솨봇] 현제 솨롯머신은 ["+rplayer+"]님이 플래이 중 입니다.")
+}
+}//룰렛
+
+if(msg.indexOf("/베팅")!=-1&&sender==rplayer){
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")//코인텍스트
+coinN=Number(coin)//코인숫자
+bm=Number(msg.substring(4).replace(/[^0-9]/g,"").trim())
+if(bm<=coinN){
+if(bm>=10){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 플래이 횟수.txt","1")
+replier.reply("[솨봇] 🎰  ["+name+"]님이 ["+bm+"]코인을 베팅했어요.")
+replier.reply("[솨봇] 자 솨롯머신을 돌립니다!! [/멈추기]를 입력해주세요!")                                     
+replier.reply("┌──────────┐\n┃┏────────┐┌ ┐\n┃┃ ▒ ┃  ▒  ┃ ▒ ┃┃ ┃\n┃┗────────┛└ ┘\n└──────────┘")
+rplaying=1
+}
+else{
+replier.reply("[솨봇] 최소 10코인 부터 베팅이 가능합니다!")
+}
+}
+else{
+replier.reply("[솨봇] 앗! 돈이 부족해요.\n 잔고 : ["+coinN+"] 코인")
+}
+}
+if(msg=="/솨롯머신 취소"&&sender==rplayer){
+if(rplaying==0){
+replier.reply("[솨봇] "+name+"님의 솨롯머신게임이 취소됐어요!")
+rgame=0
+rplayer=0
+}//룰렛시작여부
+else{
+replier.reply("[솨봇] 이미 솨롯머신을 돌렸어요! [/멈추기]를 입력해 결과를 확인해보세요.")
+}
+}//룰렛취소
+
+if(msg=="/멈추기"&&sender==rplayer){
+if(rplaying==1){
+var lineL= Math.floor(Math.random() * 7)+1;
+var lineM = Math.floor(Math.random() * 7)+1;
+var lineR = Math.floor(Math.random() * 7)+1;
+if(lineL==1){
+lineLI=("♠")
+}
+if(lineL==2){
+lineLI=("♥")
+}
+if(lineL==3){
+lineLI=("♣")
+}
+if(lineL==4){
+lineLI=("♦️")
+}
+if(lineL==5){
+lineLI=("🍒")
+}
+if(lineL==6){
+lineLI=("🎲")
+}
+if(lineL==7){
+lineLI=("솨")
+}
+
+if(lineM==1){
+lineMI=("♠")
+}
+if(lineM==2){
+lineMI=("♥")
+}
+if(lineM==3){
+lineMI=("♣")
+}
+if(lineM==4){
+lineMI=("♦️")
+}
+if(lineM==5){
+lineMI=("🍒")
+}
+if(lineM==6){
+lineMI=("🎲")
+}
+if(lineM==7){
+lineMI=("솨")
+}
+
+if(lineR==1){
+lineRI=("♠")
+}
+if(lineR==2){
+lineRI=("♥")
+}
+if(lineR==3){
+lineRI=("♣")
+}
+if(lineR==4){
+lineRI=("♦️")
+}
+if(lineR==5){
+lineRI=("🍒")
+}
+if(lineR==6){
+lineRI=("🎲")
+}
+if(lineR==7){
+lineRI=("솨")
+}
+
+rgame=0
+rplaying=0
+rplayer=0
+replier.reply("┌──────────┐\n┃┏────────┐┌ ┐\n┃┃ "+lineLI+" ┃  "+lineMI+" ┃  "+lineRI+" ┃┃ ┃\n┃┗────────┛└ ┘\n└──────────┘")
+if(lineL+1==lineM&&lineM+1==lineR){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 스트레이트 횟수.txt","1")
+replier.reply("[솨봇] 스트레이트! 베팅 코인 x 5배")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 스트레이트를 터트렸습니다!")
+pm=1
+coinR=coinN+bm*5
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"]스트레이를 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+if(lineL+lineM+lineR==7){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 썸7 횟수.txt","1")
+replier.reply("[솨봇] 썸7! 베팅 코인 x 7배")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 썸7를 터트렸습니다!")
+pm=1
+coinR=coinN+bm*7
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"] 썸7을 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+if(lineL==lineR&&lineM!=lineR){
+if(lineL+lineM+lineR!=7){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 준잭팟 횟수.txt","1")
+replier.reply("[솨봇] 잭팟?인줄 알았는데.. 베팅 코인 x 2배")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 준잭팟를 터트렸습니다!")
+pm=1
+coinR=coinN+bm*2
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"] 준잭팟를 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+}
+if(lineL==lineM+1&&lineM==lineR+1){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 역스트레이트 횟수.txt","1")
+replier.reply("[솨봇] 역스트레이트! 베팅 코인 x 10배")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 역스트레이트를 터트렸습니다!")
+pm=1
+coinR=coinN+bm*10
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"]역스트레이를 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+if(lineL==lineM&&lineM==lineR){
+if(lineL==7){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 솨잭팟 횟수.txt","1")
+replier.reply("[솨봇] 솨솨 잭팟! 베팅 코인 x 100배☆")
+Api.replyRoom("공지방","🔥[솨봇] "+sender+"님이 솨솨잭팟을 터트렸습니다!")
+coinR=coinN+bm*100
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ🔥["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"]솨솨 잭팟을 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+if(lineL==6){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 무작위 잭팟 횟수.txt","1")
+var RD= Math.floor(Math.random() * 200)+1;
+var RDR= Math.floor(Math.random() * RD)+1;
+replier.reply("[솨봇]🎲🎲🎲 잭팟? "+RDR+"배!")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 무작위 잭팟을 터트렸습니다!"+RDR+"배!")
+coinR=coinN+coin*RDR
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ🎲["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"]🎲🎲🎲잭팟을 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+if(lineL<=5){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"솨롯머신 잭팟 횟수.txt","1")
+replier.reply("[솨봇] 잭팟! 베팅코인 50배!")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 잭팟를 터트렸습니다!")
+coinR=coinN+bm*50
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+FileStream.append("sdcard/katalkbot/솨솨코인/솨롯머신 기록.txt","ㆍ🔥["+회원코드+"]님이 ["+lineL+"|"+lineM+"|"+lineR+"]잭팟을 터트렸습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+pm=1
+
+}
+if(pm!=1){
+replier.reply("[솨봇] 실패! "+bm+"코인이 공중분해됩니다.")
+coinR=coinN-bm
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+}
+replier.reply("[솨봇] "+lineL+"  |  "+lineM+"  |  "+lineR)
+pm=0
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")//코인텍스트
+coinN=Number(coin)//코인숫자
+}
+else{
+replier.reply("[솨봇] 아직 베팅하지 않았어요! [/베팅] 뒤에 입력하주세요. ex) /베팅 30")
+}
+}
+
+}
+//----------------------------------------숫자맞추기----------------------------------------
+if(room=="숫자맞추기"){
+//-------
+if(msg.trim()=="/숫자게임"){
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")//코인텍스트
+coinN=Number(coin)//코인숫자
+if(지갑목록.indexOf(회원코드)!=-1){
+if(coinN>=10){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자게임 플래이 횟수.txt","1")
+    var a = Math.floor(Math.random()*5+1)
+    var b = Math.floor(Math.random()*5+1)
+    var c = Math.floor(Math.random()*5+1)
+    var o = ['□■□','■■□','□■□','□■□','□■□']
+    var t = ['■■■','□□■','■■■','■□□','■■■']
+    var th = ['■■■','□□■','■■■','□□■','■■■']
+    var f = ['■□■','■□■','■■■','□□■','□□■']
+    var fi = ['■■■','■□□','■■■','□□■','■■■']
+    var s = ['■■■','■□□','■■■','■□■','■■■']
+    var se = ['■■■','□□■','□□■','□□■','□□■']
+    var ca = {1:o,2:t,3:th,4:f,5:fi}
+    var first = ca[a]; var second = ca[b]; var third = ca[c]
+    var list = ""
+    for(var i = 0;i<5;i++){
+        list += first[i]+'  '+second[i]+'  '+third[i]+"\n"
+    }
+list = list.replace(/□/g,"░").replace(/■/g,"█")
+    if(a==b&&b==c){
+        replier.reply(list+"\n당첨이네요! 축하드립니다. ["+sender+"]")
+     coinR=coinN+500
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 숫자게임에서 돈을 획득했습니다!")
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자게임 성공 횟수.txt","1")
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")
+FileStream.append("sdcard/katalkbot/솨솨코인/숫자맞추기 기록.txt","ㆍ["+회원코드+"]님이 숫자게임에 성공했습니다.\n"+coinN+" --> "+coinR+"\n\n")
+
+    } else {
+        replier.reply(list+"\n음... 꽝이네요.["+sender+"]")
+coinR=coinN-15
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+
+    }
+}
+else{
+replier.reply("[솨봇] "+name+"님의 코인이 부족해요!ㅋㅋ\n 잔고 : ["+coinN+"] 코인")
+}
+}else{
+replier.reply("[솨봇] "+name+"님은 아직 지갑이 없습니다.\n [/솨지갑 생성]을 통해 지갑을 만들어보세요!")
+}
+}
+
+//-------
+if(msg=="/히스토리"){
+nh=FileStream.read("sdcard/katalkbot/솨솨코인/숫자맞추기 기록.txt")
+replier.reply("ㆍ솨롯머신 히스토리ㆍ"+blank+"\n\n"+nh)
+}
+if(msg=="/솨 숫자맞추기"){
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자맞추기 플래이 횟수.txt","1")
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")//코인텍스트
+coinN=Number(coin)//코인숫자
+if(ngame==0){
+if(지갑목록.indexOf(회원코드)!=-1){
+if(coinN>=15){
+coinR=coinN-15
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+nplayer=sender
+ngame=1
+replier.reply("[솨봇] (-15 솨솨코인) 1~10까지 아무숫자나 골라줘~ ex)/정답 1\n 플래이어 : "+nplayer)
+}
+else{
+replier.reply("[솨봇] "+name+"님의 코인이 부족해요!ㅋㅋ\n 잔고 : ["+coinN+"] 코인")
+}
+}
+else{
+replier.reply("[솨봇] "+name+"님은 아직 지갑이 없습니다.\n [/솨지갑 생성]을 통해 지갑을 만들어보세요!")
+}
+}
+else{
+replier.reply("[솨봇] 현제 숫자맞추기는 ["+nplayer+"]님이 플래이 중 입니다.")
+}
+}
+
+
+if(msg.indexOf("/정답")!=-1&&sender==nplayer&&ngame==1){
+n=msg.substring(4)
+var ng = Math.floor(Math.random() *10);
+var ng2=ng+1
+ngame=0
+nplayer=0
+if(n==ng2){
+replier.reply("[솨봇] 정답! ㅊㅋㅊㅋ")
+Api.replyRoom("공지방","[솨봇] "+sender+"님이 숫자맞추기를 성공했습니다!")
+FileStream.append("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"숫자맞추기 성공 횟수.txt","1")
+coinR=coinN+200
+FileStream.write("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt",coinR)
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")
+FileStream.append("sdcard/katalkbot/솨솨코인/숫자맞추기 기록.txt","ㆍ["+회원코드+"]님이 숫자맞추기에 성공했습니다.\n"+coinN+" --> "+coinR+"\n\n")
+}
+else {
+coin=FileStream.read("sdcard/katalkbot/솨솨코인/"+profile+"~"+name+"지갑.txt")
+var fm = Math.floor(Math.random() * 10);
+if(fm==0){
+replier.reply("[솨봇] 버그땜에 패이크가 없어졌다!☆☆ 땡! 정답은 : "+ng2)
+}
+if(fm>=2){
+replier.reply("[솨봇] 땡! 정답은 : "+ng2)
+}
+if(fm==1){
+replier.reply("[솨봇] 틀림. 암튼 틀림. "+ng2)
+}
+
+}
+
+
+}
+}
+//-------------------블랙솨----------------
+
+//--------------돈벌기-------------
+
+//----------------------------지갑등록----------------------------------------------
+
+
+}
