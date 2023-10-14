@@ -1,0 +1,324 @@
+const scriptName="금칙어 게임.js";
+
+
+var p1=0;//플래이어 이름
+var p2=0;//플래이어 이름
+var p3=0;//플래이어 이름
+var p4=0;//플래이어 이름
+
+var p1g=0;//p1 금칙어
+var p2g=0;//p2 금칙어
+var p3g=0;//p3 금칙어
+var p4g=0;//p4 금칙어
+
+var p1l=1;//1=생존 0=죽음
+var p2l=1;//1=생존 0=죽음
+var p3l=1;//1=생존 0=죽음
+var p4l=1;//1=생존 0=죽음
+
+var p1r =("p1 : 준비중");//대기 p1
+var p2r =("p2 : 준비중");//대기 p2
+var p3r =("p3 : 준비중");//대기 p3
+var p4r =("p4 : 준비중");//대기 p4
+
+var p1s = (p1+": 생존");
+var p2s = (p2+": 생존");
+var p3s = (p3+": 생존");
+var p4s = (p4+": 생존");
+
+
+var 진행=0;//1=진행 중
+var 시작=0;//1=시작함
+
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId){
+
+   
+   var p = p1l+p2l+p3l+p4l; //게임 종료 변수
+   var sub = (p1l+""+p2l+""+p3l+""+p4l)  
+         if(room!="핀과 제이크 공챗방 Feat. 카툰네트워크") {//봇 중복 방지
+            if(msg=="/금칙어 게임") {
+            if(진행==0&&시작==0) {//게임 시작, 진행 아닐 때
+               //금칙어 게임 호출
+                  replier.reply("☆☆금칙어 게임☆☆");
+                  replier.reply("게임 설명\n 1. 총 4명 까지 플래이어 참가\n2. /p1,2,3,4으로 플래이어 번호 정하기\n3. 겐톡에 봇 초대 후 /설정 이라고 하기\n4. 게임시작 전 /리셋 이라고 하면 게임 리셋\n5. 플래이어를 다 정하면 /게임시작 이라고 하면 게임시작\n     주의사항\n 재미를 위해 금칙어 2자 이상으로 해주기 \n4명의 플래이어가 꼭 모여야함");
+                  진행=1;//진행 중으로 바꿈
+                  }
+            else {
+            replier.reply("게임진행 중입니다. 대기해 주세요..")
+            }
+               }
+            
+
+            if(msg=="/게임시작"&&진행==1&&isGroupChat==1){//겡임시작이라 했을 때,   진행이 1일때(/금칙어 게임 이라고 한 후에 /게임시작을 했는가),   그룹쳇인가
+   
+               if(p1g !=0 && p2g !=0 && p3g !=0 && p4g !=0){//플래이어 모두 준비완료
+                                진행=0//진행 끝
+                                시작 = 1//게임시작
+                        replier.reply("게임이 시작되었습니다. 각자 제 봇이 있는 겐톡에 /금칙어 라고 해주세요")
+                        replier.reply("/금칙어 말하시면 상대방의 금칙어가 나옵니다. 순서를 정해 돌아가며 서로 대화를 하며 상대방이 금칙어를 말하도록 유도하게하여 이기는 게임입니다.")
+                        replier.reply("/ㅌ이라고 하시면 게임현황이 나옵니다.")
+                        replier.reply(p1+"님이 /게임종료라고 하면 게임종료가 됩니다.")
+                        }
+               else{//플래이어가 모두 준비되지 않았을 때
+                  replier.reply("아직 모든 플래이어가 준비되지 않았습니다.")
+                  replier.reply(p1r+"\n"+p2r+"\n"+p3r+"\n"+p4r)//플래이어 준비 현황
+                  }
+               }
+           
+           
+           
+////대기            
+            if(진행==1){//게임시작 전
+                if(isGroupChat==1) {
+                    if(sender==p1) {
+                         if(msg=="/탈퇴") {
+                             p2g=0
+                             p1r =("p1 : 준비중")
+                             replier.reply(p1+": 탈퇴 되었습니다.")
+                             p1=0
+                         }
+                      }
+                    if(sender==p2) {
+                         if(msg=="/탈퇴") {
+                            p3g=0
+                             p2r =("p1 : 준비중")
+                            replier.reply(p2+": 탈퇴 되었습니다.")
+                            p2=0
+                         }
+                      }
+                    if(sender==p3) {
+                         if(msg=="/탈퇴") {
+                            
+                            p4g=0
+                             p3r =("p1 : 준비중")
+                           replier.reply(p3+": 탈퇴 되었습니다.")
+                            p3=0
+                         }
+                      }
+                    if(sender==p4) {
+                         if(msg=="/탈퇴") {
+                           p1g=0
+                             p4r =("p1 : 준비중")
+                            replier.reply(p4+": 탈퇴 되었습니다.")
+                            p4=0
+                         }
+                      }
+                  }
+
+               if(msg=="/리셋") {//게임 종료
+                  replier.reply("게임리셋")
+                  Api.compile(scriptName);//컴파일
+                  }
+               if(sender!=p1&&sender!=p2&&sender!=p3&&sender!=p4&&isGroupChat==1){//sender가 p1,2,3,4 중 하나에도 포함되지 않았을 때
+                  if(msg=="/p1"&&p1==0){//p1 정하기, p1이 정해지지 않았을 때
+                     p1=(sender)//p1을 sender로
+                           replier.reply("p1: "+sender);//정상처리 알리기
+                     p1r =(p1+": 금칙어 고르는 중...")//준비현황 바꾸기
+p1s = (p1+": 생존");
+                     }
+                  if(msg=="/p2"&&p2==0){//=
+                     p2=(sender)//=
+                           replier.reply("p2: "+sender)//=
+                           p2r =(p2+": 금칙어 고르는 중...")//=
+p2s = (p2+": 생존");
+                           }
+                  if(msg=="/p3"&&p3==0){//=
+                     p3=(sender)//=
+                           replier.reply("p3: "+sender)//=
+                           p3r =(p3+": 금칙어 고르는 중...")//=
+p3s = (p3+": 생존");
+                           }
+                  if(msg=="/p4"&&p4==0){//=
+                     p4=(sender)//=
+                           replier.reply("p4: "+sender)//=
+                           p4r =(p4+": 금칙어 고르는 중...")//=
+p4s = (p4+": 생존");
+                           }
+                  }
+               
+               ////////p1설정
+               if(sender==p1&&isGroupChat==0){
+                  if(msg=="/설정"){
+                     replier.reply("당신은 "+p2+"의 금칙어를 정할 것입니다. /ㅂ 뒤에 금칙어를 붙여서 말해주세요!\n ex) /ㅂ 가방")
+                  }
+                  if(msg.indexOf("/ㅂ")!=-1){
+                  p2g=msg.substring(3)
+                        p1r=(p1+": 준비완료")
+                        replier.reply(p2g+"로 설정되었습니다!")
+                        replier.reply("게임시작 전 까지 다시 설정 가능합니다.")
+                        }
+                  }
+
+               ///////p2설정
+               if(sender==p2&&isGroupChat==0){
+                  if(msg=="/설정"){
+                     replier.reply("당신은 "+p3+"의 금칙어를 정할 것입니다. /ㅂ 뒤에 금칙어를 붙여서 말해주세요!\n ex) /ㅂ 가방")
+                     }
+                  if(msg.indexOf("/ㅂ")!=-1){
+                     p3g=msg.substring(3)
+                           p2r=(p2+": 준비완료")
+                           replier.reply(p3g+"로 설정되었습니다!")
+                           replier.reply("게임시작 전 까지 다시 설정 가능합니다.")
+                           }
+                  }
+                    //////p3설정
+               if(sender==p3&&isGroupChat==0){
+                  if(msg=="/설정"){
+                     replier.reply("당신은 "+p4+"의 금칙어를 정할 것입니다. /ㅂ 뒤에 금칙어를 붙여서 말해주세요!\n ex) /ㅂ 가방")
+                     }
+                  if(msg.indexOf("/ㅂ")!=-1){
+                     p4g=msg.substring(3)
+                           p3r=(p3+": 준비완료")
+                           replier.reply(p4g+"로 설정되었습니다!")
+                           replier.reply("게임시작 전 까지 다시 설정 가능합니다.")
+                           }
+                  }
+                    ////p4설정
+               if(sender==p4&&isGroupChat==0){
+                  if(msg=="/설정"){
+                     replier.reply("당신은 "+p1+"의 금칙어를 정할 것입니다. /ㅂ 뒤에 금칙어를 붙여서 말해주세요!\n ex) /ㅂ 가방")
+                     }
+                  if(msg.indexOf("/ㅂ")!=-1){
+                     p1g=msg.substring(3)
+                           p4r=(p4+": 준비완료")
+                           replier.reply(p1g+"로 설정되었습니다!")
+                           replier.reply("게임시작 전 까지 다시 설정 가능합니다.")
+                           }
+                  }
+               }
+
+
+////시작
+            if(시작==1) {
+               if(msg=="/ㅌ") {
+                  replier.reply(p1s+"\n"+p2s+"\n"+p3s+"\n"+p4s)
+               }
+               if(sender==p1) {
+                  if(msg.indexOf(p1g)!=-1&&p1l==1) {
+                     if(isGroupChat==1){
+                     p1l=0
+                     p1s=(p1+": 탈락")
+                     replier.reply("---"+p1+"님 탈락!---")
+                     replier.reply("금칙어: "+p1g)
+                      replier.reply(p1s+"\n"+p2s+"\n"+p3s+"\n"+p4s)
+                     }
+                     }
+                  if(isGroupChat==0) {
+                     if(msg=="/금칙어") {
+                        replier.reply(p2+": "+p2g+"\n"+p3+": "+p3g+"\n"+p4+": "+p4g)
+                        }
+                     }
+                  if(msg=="/게임종료") {
+                     replier.reply("게임종료!")
+                     Api.compile(scriptName);
+         
+                  }
+         
+     
+               }
+   
+              
+                  if(sender==p2) {
+                     if(msg.indexOf(p2g)!=-1&&p2l==1) {
+                        if(isGroupChat==1){
+                        p2l=0
+                        p2s=(p2+": 탈락")
+                        replier.reply("---"+p2+"님 탈락!---")
+                        replier.reply("금칙어: "+p2g)
+                        replier.reply(p1s+"\n"+p2s+"\n"+p3s+"\n"+p4s)
+                        }
+                     }
+                     if(isGroupChat==0) {
+                        if(msg=="/금칙어") {
+                           replier.reply(p1+": "+p1g+"\n"+p3+": "+p3g+"\n"+p4+": "+p4g)
+                           }
+                        }
+                     }
+   
+   
+                  if(sender==p3) {
+                     if(msg.indexOf(p3g)!=-1&&p3l==1) {
+                        if(isGroupChat==1){
+                        p3l=0
+                        p3s=(p3+": 탈락")
+                        replier.reply("---"+p3+"님 탈락!---")
+                        replier.reply("금칙어: "+p3g)
+                        replier.reply(p1s+"\n"+p2s+"\n"+p3s+"\n"+p4s)
+                        }
+                     }
+                     if(isGroupChat==0) {
+                        if(msg=="/금칙어") {
+                           replier.reply(p1+": "+p1g+"\n"+p2+": "+p2g+"\n"+p4+": "+p4g)
+                           }
+                        }
+                     }
+   
+   
+                  if(sender==p4) {
+                     if(msg.indexOf(p4g)!=-1&&p4l==1) {
+                        if(isGroupChat==1){
+                        p4l=0
+                        p4s=(p4+": 탈락")
+                        replier.reply("---"+p4+"님 탈락!---")
+                        replier.reply("금칙어: "+p4g)
+                        replier.reply(p1s+"\n"+p2s+"\n"+p3s+"\n"+p4s)
+                        }
+                     }
+                     if(isGroupChat==0) {
+                        if(msg=="/금칙어") {
+                           replier.reply(p1+": "+p1g+"\n"+p2+": "+p2g+"\n"+p3+": "+p3g)
+                           }
+                        }
+                     }
+   
+           
+               
+   
+            }
+            if(p<=1) {
+               replier.reply("게임종료")
+               if(sub=="1000") {
+                  replier.reply("승자는 "+p1)
+                  replier.reply("금칙어: "+p1g+"\n 승리 포인트 3000xp")
+                 경험치=FileStream.read("sdcard/katalkbot/ㄱㅎㅁ/"+p1+"경험치.text")
+                  b=Number(경험치)
+               FileStream.write("sdcard/katalkbot/ㄱㅎㅁ/"+p1+"경험치.text",b+3000)
+
+               }
+               if(sub=="0100") {
+                  replier.reply("승자는 "+p2)
+                  replier.reply("금칙어: "+p2g+"\n 승리 포인트 3000xp")
+경험치=FileStream.read("sdcard/katalkbot/ㄱㅎㅁ/"+p2+"경험치.text")
+                  b=Number(경험치)
+               FileStream.write("sdcard/katalkbot/ㄱㅎㅁ/"+p2+"경험치.text",b+3000)
+
+               }
+               if(sub=="0010") {
+                  replier.reply("승자는 "+p3)
+                  replier.reply("금칙어: "+p3g+"\n 승리 포인트 3000xp")
+경험치=FileStream.read("sdcard/katalkbot/ㄱㅎㅁ/"+p3+"경험치.text")
+                  b=Number(경험치)
+               FileStream.write("sdcard/katalkbot/ㄱㅎㅁ/"+p3+"경험치.text",b+3000)
+
+               }
+               if(sub=="0001") {
+                  replier.reply("승자는 "+p4)
+                  replier.reply("금칙어: "+p4g+"\n 승리 포인트 3000xp")
+경험치=FileStream.read("sdcard/katalkbot/ㄱㅎㅁ/"+p4+"경험치.text")
+                  b=Number(경험치)
+               FileStream.write("sdcard/katalkbot/ㄱㅎㅁ/"+p4+"경험치.text",b+3000)
+
+                  }
+               Api.compile(scriptName);
+               }
+            else return
+
+
+
+
+
+
+         
+         }
+
+}
