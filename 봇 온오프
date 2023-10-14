@@ -1,0 +1,31 @@
+const scriptName="봇관리.js";
+var 솨프필=FileStream.read("sdcard/katalkbot/솨프필.text")
+var IHW프필=FileStream.read("sdcard/katalkbot/I♡HW프필.text")
+var blank="\u200b".repeat(501)
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId){
+var 프추=ImageDB.getProfileImage()
+if(sender=="솨"&&프추==솨프필||sender=="I♡HW"&&프추==IHW프필){
+
+//블랙리스트
+
+
+
+//봇목록
+if(msg=="/봇목록"){
+replier.reply("ㆍ봇 목록ㆍ"+blank+"\n\nㆍ솨봇\nㆍ잠수봇\nㆍ베라\nㆍ어탐오픈쳇\nㆍ기록\nㆍ메모\nㆍ레식\nㆍ테스트(끝말잇기임)")
+}
+    if(msg.indexOf("/봇관리")==0){
+n=msg.indexOf("~")
+b=msg.substring(n+1).trim()
+o=msg.substring(4,n).trim()
+if(o=="끄기"){
+Api.off(b+".js");
+replier.reply(b+"이 꺼졌습니다.")
+}
+if(o=="켜기"){
+Api.on(b+".js");
+Api.compile(b+".js");
+replier.reply(b+"이 켜졌습니다.")
+}
+}
+}
