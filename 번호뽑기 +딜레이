@@ -1,0 +1,23 @@
+const scriptName="선택장애.js";
+
+function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId){
+if(msg.indexOf("/무작위")==0){
+List=("")
+L=Number(msg.split("-")[1])
+for(i=0;i<=L;i++){
+List=(List+"-"+msg.split("-")[2+i])
+}
+
+a=Math.floor(Math.random() * L)+1;
+replier.reply("[솨봇] 두구두구 3초 뒤 공개!")
+java.lang.Thread.sleep(1000);
+replier.reply("3!")
+java.lang.Thread.sleep(1000);
+replier.reply("2!")
+java.lang.Thread.sleep(1000);
+replier.reply("1!")
+java.lang.Thread.sleep(1000);
+replier.reply("[솨봇]"+List.split("-")[a]+"가 당첨되었습니다!")
+
+}
+}
