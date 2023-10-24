@@ -1,0 +1,46 @@
+var chat ={}
+var defaultData = [
+    {"role": "system", "content": "당신은 마이스터고 톡방의 도우미 봇입니다. [솨봇]을 붙여 말해주세요"}   ]
+function response(room, msg, sender, isGroupChat, replier) {
+  if (msg=="!솨봇"){
+    chat[room] = defaultData
+    replier.reply(room+"이 추가되었어요!")
+  }
+  
+  if(msg.startsWith("!")){
+    msg=msg.substring(1)
+  //룸 체크
+  if(chat[room] == undefined) {
+    replier.reply("아직 이 방은 솨봇이 지원되지 않아요! !솨봇")
+  } else {
+    chat[room].push({
+      "role": "user",
+      "content": msg
+    })
+  
+
+  var data = {
+    'model': 'gpt-4',
+    'temperature': 1,
+    'messages': chat[room]
+  };
+
+  data = JSON.stringify(data);
+
+  var ans = org.jsoup.Jsoup.connect('https://api.openai.com/v1/chat/completions')
+    .header('Content-Type', 'application/json')
+    .header('Authorization', 'Bearer ' + 'key') //api키 입력
+    .requestBody(data)
+    .ignoreHttpErrors(true)
+    .ignoreContentType(true)
+    .post().text();
+
+  var ans = JSON.parse(ans).choices[0].message.content;
+
+  replier.reply(ans);
+  }
+  }
+}
+
+  
+
