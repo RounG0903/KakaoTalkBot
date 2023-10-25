@@ -1,0 +1,57 @@
+const { KakaoApiService, KakaoLinkClient } = require('kakaolink')
+const Kakao = new KakaoLinkClient();
+KakaoApiService.createService().login({
+    email: 'kakao id',
+    password: 'password',
+    keepLogin: true,
+}).then(e => {
+    Kakao.login(e, {
+        apiKey: 'api key',
+        url: 'Platform'
+    });
+}).catch(e => {
+    throw e;
+});
+
+var 퇴근시간 = 21
+var 퇴근 = 0
+var 오늘 = new Date().getDate();
+var image = "https://cdn.discordapp.com/attachments/1129219287312253110/1166653593370243132/image.png?ex=654b45d4&is=6538d0d4&hm=c3186e51c204aa65456b67761ea4661b1d99b9bc777f53e910a29e612e99fc9a&"
+
+function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
+  var day = new Date();
+  var hour = day.getHours()
+  
+  if(day.getDate()!=오늘){
+    오늘 = day.getDate()
+    퇴근 = 0
+  }
+  if(퇴근시간 == hour && 퇴근 == 0){
+    퇴근=1
+    Kakao.sendLink("H 병동", {
+            template_id: 99994,
+            template_args: {
+              THU:image
+            }
+        }, 'custom')
+  }
+  if(msg=="!퇴근알리미"){
+    
+    
+    if(퇴근시간<=hour){
+      replier.reply("우진님은 이미 퇴근했어요!")
+    }
+    else{
+      var min = day.getMinutes()
+      if (min>=30) {hour+=1}
+      replier.reply("우진님의 퇴근까지 약 [   "+(퇴근시간-hour)+"   ]시간 남았어요!")
+    }
+  }
+  if(msg.startsWith("!퇴근시간")){
+    var time = msg.substring(5)
+    퇴근시간 = time
+    퇴근=0
+    replier.reply("우진님의 퇴근시간이 [   "+time+"   ]시로 변경됐어요!")
+  }
+}
+
