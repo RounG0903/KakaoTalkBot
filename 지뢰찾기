@@ -15,8 +15,8 @@ var Hline9 = [];
 var Hidden = [Hline0,Hline1,Hline2,Hline3,Hline4,Hline5,Hline6,Hline7,Hline8,Hline9];//판
 var Rsrd = [-1, -1, -1, 0, 0, 1, 1, 1];
 var Lsrd = [-1, 0, 1, -1, 1, -1, 0, 1];
-var shape = ["⓪","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣"]; //나타내는모양
-var blank_shape =["⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿", "⓿"];
+var shape = ["⬜️","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣"]; //나타내는모양
+var blank_shape =["⬛️", "⬛️", "⬛️", "⬛️", "⬛️", "⬛️", "⬛️", "⬛️", "⬛️", "⬛️"];
 
 var Pl=[];
 var show = [];
@@ -37,6 +37,7 @@ var gameend = 0;
 var no = [];
 var player;
 
+var guideLine = "    0   1   2   3  4  5   6   7  8  9"
 function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName, threadId) {
     if (msg == "/지뢰찾기") {
         if (playing == 0) {
@@ -85,7 +86,8 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
 }
             //판모으기
             Hidden = [Hline0, Hline1, Hline2, Hline3, Hline4, Hline5, Hline6, Hline7, Hline8, Hline9];
-            show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+            
+            show = [guideLine, "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
                 
             
             replier.reply(show.join("\n").replace(/,/g,''));
@@ -105,8 +107,8 @@ function response(room, msg, sender, isGroupChat, replier, ImageDB, packageName,
     if (playing == 1&&sender==player) {
 
 if(msg.indexOf("!") !=-1){
-L = msg.split("!")[0].trim(); //행좌표
-R = msg.split("!")[1].trim(); //열좌표
+R = msg.split("!")[0].trim(); //행좌표
+L = msg.split("!")[1].trim(); //열좌표
 if(Pl.indexOf(R + "" + L)!=-1){
 
 replier.reply(Pl.filter(function(element){ element!=(R + "" + L)}))
@@ -145,14 +147,14 @@ show0[i].push("🚩");
 }
 
 else {//아니면
-                    show0[i].push("⓿"); //열리지 않은 박스
+                    show0[i].push("⬛️"); //열리지 않은 박스
                     no.push("0"); //열리지 않은 박스 +1
                 }
             }
             }
 
            
-                show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                show = [ guideLine, "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
                 replier.reply(show.join("\n").replace(/,/g,''));
             
 
@@ -260,18 +262,18 @@ no.push("0");
 }
 
 else {//아니면
-                    show0[i].push("⓿"); //열리지 않은 박스
+                    show0[i].push("⬛️"); //열리지 않은 박스
                     no.push("0"); //열리지 않은 박스 +1
                 }
             }
             }
 
             if (no.length != Cbomb) { //게임계속
-                show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                show = [guideLine, "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
                 replier.reply(show.join("\n").replace(/,/g,''));
             } else if (no.length == Cbomb) {//게임종료 승리
                 replier.reply("성공이네요! 축하해요");
-                show = ["    0   1   2   3   4  5   6   7   8   9  ", "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
+                show = [guideLine, "0 "+Sline0, "1 "+Sline1, "2 "+Sline2, "3 "+Sline3, "4 "+Sline4, "5 "+Sline5,"6 "+Sline6, "7 "+Sline7, "8 "+Sline8, "9 "+Sline9];
                 replier.reply(show.join("\n").replace(/,/g,''));
                 Api.compile(scriptName);
                 gameend = 1;
