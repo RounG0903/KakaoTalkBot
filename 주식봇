@@ -1,0 +1,347 @@
+const blank="\u200b".repeat(501)
+/////////database/////////////
+const SQLiteDatabase = android.database.sqlite.SQLiteDatabase;
+let db = null;
+function updateDB() {
+    db = SQLiteDatabase.openDatabase("sdcard/주식봇/db.db", null, SQLiteDatabase.CREATE_IF_NECESSARY);
+    historys = SQLiteDatabase.openDatabase("sdcard/주식봇/historys.db", null, SQLiteDatabase.CREATE_IF_NECESSARY);
+}
+updateDB();
+
+//////////카링///////////////
+const { KakaoApiService, KakaoLinkClient } = require('kakaolink')
+const Kakao = new KakaoLinkClient();
+KakaoApiService.createService().login({
+    email: '',
+    password: '',
+    keepLogin: true,
+}).then(e => {
+    Kakao.login(e, {
+        apiKey: '',
+        url: 'https://www.google.com'
+    });
+}).catch(e => {
+    throw e;
+});
+
+
+function response(room, msg, sender, isGroupChat, replier, imageDB, packageName) {
+
+  if(msg=="!도움말"){
+    Kakao.sendLink(room, {
+            template_id: 100068,
+            template_args: {
+            }
+        }, 'custom')
+  }
+//////////등록////////////////
+  if(msg=="!등록"){
+    profile= java.lang.String(imageDB.getProfileImage()).hashCode().toString();
+    let account_info_db = db.rawQuery("SELECT * FROM account_info_db where name='"+sender+"' and profile = '"+profile+"'", null);
+    if (account_info_db.getCount() == 0){
+        db.execSQL("INSERT INTO account_info_db (NAME,PROFILE,MONEY) VALUES('"+sender+"','"+profile+"',1000000)")
+        historys.execSQL("create table '"+sender+"_"+profile+"' (\NAME text default null,\STOCK Number default null)")
+        replier.reply("회원가입 완료! 프로필 이미지나 이름이 변경될 경우 다시 가입해야합니다! \n자금: 100만원")
+    }
+    else{
+      replier.reply("이미 회원이에요!")
+    }
+  }
+///////////내정보///////////////
+  if(msg=="!내정보"){
+    profile= java.lang.String(imageDB.getProfileImage()).hashCode().toString();
+    let account_info_db = db.rawQuery("SELECT * FROM account_info_db where name='"+sender+"' and profile = '"+profile+"'", null);
+    if (account_info_db.getCount() == 1){
+      //사용자 정보
+        account_info_db.moveToLast()
+        name = account_info_db.getString(0)
+        profile = account_info_db.getString(1)
+        money = account_info_db.getString(2)
+      //보유주식 정보
+      hbd = historys.rawQuery("SELECT * FROM '"+sender+"_"+profile+"' where STOCK >= 1", null);
+      i = hbd.getCount()
+      hbd.moveToLast()
+      result=""
+      sum=0
+      for(x=0;x<i;x++){
+        name=hbd.getString(0)
+        stock=hbd.getString(1)
+        link="/search?q=" + name+"%20주가"
+        data = org.jsoup.Jsoup.connect("https://www.google.com"+link).get();
+        price= Number(data.select("span[jsname=vWLAgc][class=IsqQVc NprOob wT3VGc]").text().replace(",",""))
+        unit= data.select("span[jsname=T3Us2d][class=knFDje]").text()
+        if(unit=="USD"){
+          ex=org.jsoup.Jsoup.connect("https://www.google.com/search?q="+"1달러").get()
+          ex= Number(ex.select("span[class=DFlfde SwHCTb]").text().replace(",",""))
+          price=Math.round(price*ex)
+        }
+        result+=(name+": "+stock+"주("+stock*price+")\n")
+        hbd.moveToPrevious()
+        sum+=stock*price
+      }
+      Kakao.sendLink(room, {
+            template_id: 100067,
+            template_args: {
+          SUM:Number(money)+sum,
+          SENDER:sender,
+          ID:profile,
+          CASH:money,
+          COUNT:i,
+          STOCK:sum
+            }
+        }, 'custom')
+      replier.reply(result+"///"+sender+" 주식 목록///")
+    }
+    else{
+      replier.reply("회원 정보가 없어요! !등록을 해주세요")
+    }
+  }
+///////////////매수///////////////////
+  if(msg.startsWith("!매수")){
+    profile= java.lang.String(imageDB.getProfileImage()).hashCode().toString();
+    trade = trading(msg,false,sender,profile,room)
+  }
+///////////////매도////////////////////
+  if(msg.startsWith("!매도")){
+    profile= java.lang.String(imageDB.getProfileImage()).hashCode().toString();
+    trade = trading(msg,true,sender,profile,room)
+  }
+//////////////조회////////////////////
+  if(msg.startsWith("!조회")){
+    name = msg.substring(4)
+    
+    link="/search?q=" + name+"%20주가"
+    data= find_info_stocks(link)
+    price=data["price"]
+    unit=data["unit"]
+    diff=data["diff"]
+    diff_p=data["diff_p"]
+    mc=data["mc"]
+    img=data["img"]
+    Kakao.sendLink(room, {
+            template_id: 100062,
+            template_args: {
+          UNIT:unit,
+          NAME:name,
+          MC:mc,
+          DIFF_P:diff_p,
+          PRICE:price,
+          DIFF:diff,
+          LINK:link,
+          IMG:img
+            }
+        }, 'custom')
+  }
+
+///////////gpt////////////
+  if(msg=="!추천"){
+    profile= java.lang.String(imageDB.getProfileImage()).hashCode().toString();
+    let account_info_db = db.rawQuery("SELECT * FROM account_info_db where name='"+sender+"' and profile = '"+profile+"'", null);
+    if (account_info_db.getCount() != 0){
+      replier.reply("AI 추천을 위해 데이터를 수집하고 있습니다...")
+      let hbd = historys.rawQuery("SELECT * FROM '"+sender+"_"+profile+"' order by STOCK ", null);
+      if(hbd.getCount() != 0){
+        hbd.moveToLast()
+        name = hbd.getString(0)
+        replier.reply("AI가 데이터를 분석하고 있습니다...")
+        replier.reply(chatgpt(name+" 리스트로 만들어줘", room));
+      }
+      else{
+        replier.reply("아직 사용자님의 주식정보가 부족합니다.")
+      }
+    }
+    else{
+      replier.reply("회원 정보가 없어요! !등록을 해주세요.")
+    }
+  }
+
+}
+
+function find_info_stocks(link){ //주식 정보 
+  data = org.jsoup.Jsoup.connect("https://www.google.com"+link).get();
+  price= data.select("span[jsname=vWLAgc][class=IsqQVc NprOob wT3VGc]").text()
+  unit= data.select("span[jsname=T3Us2d][class=knFDje]").text()
+  diff= data.select("span[jsname=qRSVye]").text()
+  diff_p= data.select("span[class=WlRRw IsqQVc fw-price-dn]").select("span[jsname=rfaVEf]").text().substring(1,5)
+  mc=data.select("div[class=PZPZlf][data-attrid=시가총액]").text()
+  img = org.jsoup.Jsoup.connect("https://www.google.com/"+link.replace("주가","기업")).get();
+  img=img.select("g-img[class=PZPZlf]").attr("data-lpage")
+  return {"price":price,"unit":unit,"diff":diff,"diff_p":diff_p,"mc":mc,"img":img}
+}
+
+function trading(msg,bs,sender,profile,room) {
+    input = msg.substring(4)
+    name = input.split("주 ")[1]
+    n = parseInt(input.split("주 ")[0])
+    
+    
+    link="/search?q=" + name+"%20주가"
+    data= find_info_stocks(link)
+    price=Number(data["price"].replace(",",""))
+    unit=data["unit"]
+    diff=data["diff"]
+    diff_p=data["diff_p"]
+    img=data["img"]
+    ex=null
+    if(unit=="USD"){
+      ex=org.jsoup.Jsoup.connect("https://www.google.com/search?q="+"1달러").get()
+      ex= Number(ex.select("span[class=DFlfde SwHCTb]").text().replace(",",""))
+      price=Math.round(price*ex)
+    }
+    if(price){ //회사 있으면
+       let account_info_db = db.rawQuery("SELECT * FROM account_info_db where name='"+sender+"' and profile = '"+profile+"'", null);
+      if (account_info_db.getCount() == 1){//회원이면
+        hbd = historys.rawQuery("SELECT * FROM '"+sender+"_"+profile+"' where name='"+name+"'", null);
+        account_info_db.moveToLast()
+        hbd.moveToLast()
+        money = account_info_db.getString(2)
+        try{
+          stock = parseInt(hbd.getString(1))
+        }
+        catch(e){
+          stock=0
+        }
+        if(bs){ //매도
+            if(stock >= n){ //가지고 있는 주 보다 적거나 같은 때
+                money = Math.round(Number(money)+(price*n)*0.985)
+                historys.execSQL("UPDATE '"+sender+"_"+profile+"' SET STOCK = "+(stock-n)+" where NAME = '"+name+"'")
+                db.execSQL("UPDATE account_info_db SET MONEY = "+money+" where NAME='"+sender+"' AND PROFILE='"+profile+"'")
+                Kakao.sendLink(room, {
+                  template_id: 100064,
+                  template_args: {
+                  BS:"매도",
+                  NAME:name,
+                  LINK:link,
+                  N:n,
+                  MONEY:money,
+                  PRICE:price,
+                  DIFF:"+"+(price*n)*0.985,
+                  TAX:"수수료 0.015%",
+                  EX:"환율: "+ex,
+                  IMG:img
+                  }
+                }, 'custom')
+            }
+            else{
+              Kakao.sendLink(room, {
+                template_id: 100065,
+                template_args: {
+                TEXT:"주식이 부족해요."
+                }
+              }, 'custom')
+            }
+        }
+        else{ //매수
+          if(price*n<=money){
+              money = Number(money)-(price*n)
+                if (hbd.getCount() == 0){ //처음 사면
+                    historys.execSQL("INSERT INTO '"+sender+"_"+profile+"' (NAME,STOCK) VALUES('"+name+"',"+n+")")
+                }
+              else{ 
+                stock = parseInt(hbd.getString(1))
+                historys.execSQL("UPDATE '"+sender+"_"+profile+"' SET STOCK = "+(stock+n)+" where NAME = '"+name+"'")
+              }
+              db.execSQL("UPDATE account_info_db SET MONEY = "+money+" where NAME='"+sender+"' AND PROFILE='"+profile+"'")
+              Kakao.sendLink(room, {
+                template_id: 100064,
+                template_args: {
+                BS:"매수",
+                NAME:name,
+                LINK:link,
+                N:n,
+                MONEY:money,
+                PRICE:price,
+                DIFF:"-"+(price*n),
+                EX:"환율: "+ex,
+                IMG:img
+                }
+              }, 'custom')
+          }
+            else{
+                Kakao.sendLink(room, {
+                template_id: 100065,
+                template_args: {
+                TEXT:"돈이 부족합니다."
+                }
+              }, 'custom')
+            }
+        }
+        
+        
+      }
+      else{
+        Kakao.sendLink(room, {
+                template_id: 100065,
+                template_args: {
+                TEXT:"회원 정보가 없어요! !등록을 해주세요."
+                }
+              }, 'custom')
+      }
+    }
+    else{
+        returnKakao.sendLink(room, {
+                template_id: 100065,
+                template_args: {
+                TEXT:"이름을 다시 확인해주세요."
+                }
+              }, 'custom')
+    }  
+}
+
+//////////////gpt/////////////////
+var Chat = {};
+const CHAT_LENGTH = 10;
+const API_KEY = '';
+
+function chatgpt(msg, room) {
+  try {
+
+    // load saved chats
+    if (Chat.hasOwnProperty(room)) {
+      var chat = Chat[room];
+    } else {
+      var chat = [];
+    }
+    
+    // add a new chat
+    chat.push({'role': 'user', 'content': msg});
+    
+    var s =[{'role': 'system', 'content': '당신은 주식을 추천해주는 역할입니다. 사용자가 가장 관심있는 주식명이 주어지면 그와 유사한 5가지의 주식을 리스트로 말해주세요. 말을 할때는 [AI분석]으로 시작해주세요'}]
+    // the chat message
+    var data = {
+      'model': 'gpt-3.5-turbo',
+      'messages': s.concat(chat)
+    };
+    data = JSON.stringify(data);
+
+    // request
+    var ans = org.jsoup.Jsoup.connect('https://api.openai.com/v1/chat/completions')
+      .timeout(120 * 1000)
+      .header('Content-Type', 'application/json')
+      .header('Authorization', 'Bearer ' + API_KEY)
+      .requestBody(data)
+      .ignoreHttpErrors(true)
+      .ignoreContentType(true)
+      .post().text();
+
+    ans = JSON.parse(ans);
+
+    // check error response
+    if (ans && ans.hasOwnProperty('error'))
+      throw new Error(ans.error.message);
+
+    ans = ans.choices[0].message.content.trim();
+
+    // add a response and remove old chats
+    chat.push({'role': 'assistant', 'content': ans});
+    if (chat.length > CHAT_LENGTH)
+      chat = chat.slice(-CHAT_LENGTH);
+    
+    // save chats
+    Chat[room] = chat;
+
+    return ans;
+  } catch (e) {
+    return e;
+  }
+}
